@@ -1,0 +1,31 @@
+
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AggregateOP", "AggregateOP\AggregateOP.csproj", "{CE81182B-81FC-48D7-B41D-D7E07541E574}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AggregateOP.EventStore", "AggregateOP.EventStore\AggregateOP.EventStore.csproj", "{7ADF5DF9-807A-4E02-9612-4D6FA5DFFE44}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AggregateOP.MediatR", "AggregateOP.MediatR\AggregateOP.MediatR.csproj", "{F4638B90-CAA9-4AA0-ABD4-6222CCAFD482}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{CE81182B-81FC-48D7-B41D-D7E07541E574}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CE81182B-81FC-48D7-B41D-D7E07541E574}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CE81182B-81FC-48D7-B41D-D7E07541E574}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CE81182B-81FC-48D7-B41D-D7E07541E574}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7ADF5DF9-807A-4E02-9612-4D6FA5DFFE44}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7ADF5DF9-807A-4E02-9612-4D6FA5DFFE44}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7ADF5DF9-807A-4E02-9612-4D6FA5DFFE44}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7ADF5DF9-807A-4E02-9612-4D6FA5DFFE44}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F4638B90-CAA9-4AA0-ABD4-6222CCAFD482}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F4638B90-CAA9-4AA0-ABD4-6222CCAFD482}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F4638B90-CAA9-4AA0-ABD4-6222CCAFD482}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F4638B90-CAA9-4AA0-ABD4-6222CCAFD482}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+	EndGlobalSection
+EndGlobal
