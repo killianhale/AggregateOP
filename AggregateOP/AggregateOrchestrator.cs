@@ -52,9 +52,7 @@ namespace AggregateOP
                 }
                 catch (Exception ex)
                 {
-                    var lookupException = ex is ContextException ? ex.InnerException : ex;
-
-                    if (lookupException is DataNotFoundException)
+                    if (ex is DataNotFoundException)
                     {
                         throw LogAndReturnException(context.Logger.Warning, new AggregateDependencyException<T>(id, $"Unable to find the aggregate with type {aggregateType} and ID {id}", ex));
                     }
@@ -73,7 +71,7 @@ namespace AggregateOP
         {
             var aggregateType = typeof(T).Name;
 
-            return await _runner.RunAction(async context =>
+            return await _runner.RunAction((Func<ContextRunner.Base.ActionContext, Task<Guid>>)(async context =>
             {
                 T aggregate = null;
 
@@ -91,22 +89,20 @@ namespace AggregateOP
                 }
                 catch (Exception ex)
                 {
-                    var lookupException = ex is ContextException ? ex.InnerException : ex;
-
-                    if (lookupException is DataNotFoundException)
+                    if (ex is DataNotFoundException)
                     {
-                        throw LogAndReturnException(context.Logger.Warning, new AggregateNotFoundException<T>(id, $"Unable to find the aggregate {aggregateType} {id}", ex));
+                        throw LogAndReturnException(context.Logger.Warning, new AggregateNotFoundException<T>(id, $"Unable to find the aggregate {aggregateType} {id}", (Exception)ex));
                     }
-                    else if (lookupException is DataConflictException)
+                    else if (ex is DataConflictException)
                     {
-                        throw LogAndReturnException(context.Logger.Warning, new AggregateConflictException<T>(id, $"Unable to change aggregate {aggregateType} {id} because it's out of date.", ex)
+                        throw LogAndReturnException(context.Logger.Warning, new AggregateConflictException<T>(id, $"Unable to change aggregate {aggregateType} {id} because it's out of date.", (Exception)ex)
                         {
                             Aggregate = aggregate
                         });
                     }
-                    else if (lookupException is ArgumentException || lookupException is InvalidOperationException)
+                    else if (ex is ArgumentException || ex is InvalidOperationException)
                     {
-                        throw LogAndReturnException(context.Logger.Warning, new AggregateRootException<T>(id, $"Unable to change aggregate {aggregateType} {id}. {ex.Message}", ex)
+                        throw LogAndReturnException(context.Logger.Warning, new AggregateRootException<T>(id, $"Unable to change aggregate {aggregateType} {id}. {ex.Message}", (Exception)ex)
                         {
                             Aggregate = aggregate
                         });
@@ -116,14 +112,14 @@ namespace AggregateOP
                         throw ex;
                     }
                 }
-            }, nameof(AggregateOrchestrator));
+            }), nameof(AggregateOP.AggregateOrchestrator));
         }
 
         public async Task<Guid> Create<T>(Func<Dictionary<string, AggregateRoot>, T> action) where T : AggregateRoot, new()
         {
             var aggregateType = typeof(T).Name;
 
-            return await _runner.RunAction(async context =>
+            return await _runner.RunAction((Func<ContextRunner.Base.ActionContext, Task<Guid>>)(async context =>
             {
                 T aggregate = null;
 
@@ -144,29 +140,27 @@ namespace AggregateOP
                 }
                 catch (Exception ex)
                 {
-                    var lookupException = ex is ContextException ? ex.InnerException : ex;
-
-                    if (lookupException is DataConflictException)
+                    if (ex is DataConflictException)
                     {
                         throw LogAndReturnException(context.Logger.Warning,
-                            new AggregateConflictException<T>(aggregate.Id, $"Unable to create aggregate {aggregateType} {aggregate.Id}. An aggregate with that type and ID already exists!", ex));
+                            new AggregateConflictException<T>(aggregate.Id, $"Unable to create aggregate {aggregateType} {aggregate.Id}. An aggregate with that type and ID already exists!", (Exception)ex));
                     }
-                    else if (lookupException is ArgumentException || lookupException is InvalidOperationException)
+                    else if (ex is ArgumentException || ex is InvalidOperationException)
                     {
                         throw LogAndReturnException(context.Logger.Warning,
-                            new AggregateRootException<T>(aggregate.Id, $"Unable to create aggregate {aggregateType} {aggregate.Id}. {ex.Message}", ex));
+                            new AggregateRootException<T>(aggregate.Id, $"Unable to create aggregate {aggregateType} {aggregate.Id}. {ex.Message}", (Exception)ex));
                     }
                     else
                     {
                         throw ex;
                     }
                 }
-            }, nameof(AggregateOrchestrator));
+            }), nameof(AggregateOP.AggregateOrchestrator));
         }
 
-        private Exception LogAndReturnException(Action<string> logMethod, Exception ex)
+        private Exception LogAndReturnException(Action<string, bool> logMethod, Exception ex)
         {
-            logMethod?.Invoke(ex.Message);
+            logMethod?.Invoke(ex.Message, false);
 
             return ex;
         }

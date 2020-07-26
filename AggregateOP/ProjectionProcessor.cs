@@ -31,7 +31,7 @@ namespace AggregateOP
 
         protected ProjectionProcessor(IContextRunner runner, ILogger<ProjectionProcessor<T>> logger, IEventRepository repo)
         {
-            _runner = runner ?? new ContextRunner.ContextRunner();
+            _runner = runner ?? new ActionContextRunner();
             _logger = logger;
             _repo = repo;
 

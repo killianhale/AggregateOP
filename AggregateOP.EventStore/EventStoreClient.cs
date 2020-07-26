@@ -21,7 +21,7 @@ namespace AggregateOP.EventStore
 
         public EventStoreClient(IContextRunner runner, ILogger<EventStoreClient> logger, IOptionsMonitor<EventStoreConfig> eventStoreOptions)
         {
-            _runner = runner ?? new ContextRunner.ContextRunner();
+            _runner = runner ?? new ActionContextRunner();
             _logger = logger;
             _config = eventStoreOptions.CurrentValue;
         }
@@ -169,9 +169,9 @@ namespace AggregateOP.EventStore
             _logger.LogError($"The event store connection is reconnecting. Connection: {SanitizedConnectionString}");
         }
 
-        private Exception LogAndReturnException(Action<string> logMethod, Exception ex)
+        private Exception LogAndReturnException(Action<string, bool> logMethod, Exception ex)
         {
-            logMethod?.Invoke(ex.Message);
+            logMethod?.Invoke(ex.Message, false);
 
             return ex;
         }

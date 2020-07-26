@@ -1,15 +1,16 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>netstandard2.1</TargetFramework>
     <Authors>Killian Hale</Authors>
     <Description>An aggregate based event sourcing, CQRS, and projection abstraction.</Description>
-    <PackageVersion>1.0.0</PackageVersion>
+    <PackageVersion>1.0.1</PackageVersion>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="ContextRunner" Version="1.0.1" />
-    <PackageReference Include="ReasonCodeExceptions" Version="1.0.0" />
+    <PackageReference Include="ContextRunner" Version="1.0.7" />
+    <PackageReference Include="ReasonCodeExceptions" Version="1.0.1" />
+    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Exceptions\" />
