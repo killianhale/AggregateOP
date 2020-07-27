@@ -4,7 +4,7 @@ using MediatR;
 
 namespace AggregateOP.MediatR
 {
-    public interface IMediatedEvent : IEvent, IRequest<Guid>
+    public interface IMediatedEvent<TId> : IEvent<TId>, IRequest<TId>
     {
     }
 }

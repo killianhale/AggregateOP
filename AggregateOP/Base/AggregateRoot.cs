@@ -3,22 +3,22 @@ using System.Collections.Generic;
 
 namespace AggregateOP.Base
 {
-    public abstract class AggregateRoot
+    public abstract class AggregateRoot<TId>
     {
         private readonly string _aggregateTypeID;
-        private readonly List<IEvent> _changes;
+        private readonly List<IEvent<TId>> _changes;
 
-        protected IDictionary<Type, Action<IEvent>> _handlers;
-        protected Guid _id;
+        protected IDictionary<Type, Action<IEvent<TId>>> _handlers;
+        protected TId _id;
 
-        public abstract Guid Id { get; }
+        public abstract TId Id { get; }
 
         protected AggregateRoot(string aggregateTypeID)
         {
             _aggregateTypeID = aggregateTypeID;
 
-            _changes = new List<IEvent>();
-            _handlers = new Dictionary<Type, Action<IEvent>>();
+            _changes = new List<IEvent<TId>>();
+            _handlers = new Dictionary<Type, Action<IEvent<TId>>>();
         }
 
         public string GetAggregateTypeID()
@@ -26,7 +26,7 @@ namespace AggregateOP.Base
             return _aggregateTypeID;
         }
 
-        public IEnumerable<IEvent> GetUncommittedChanges()
+        public IEnumerable<IEvent<TId>> GetUncommittedChanges()
         {
             return _changes;
         }
@@ -36,7 +36,7 @@ namespace AggregateOP.Base
             _changes.Clear();
         }
 
-        public void LoadFromHistory(IEnumerable<EventModel> history, Action<EventModel> callback = null)
+        public void LoadFromHistory(IEnumerable<EventModel<TId>> history, Action<EventModel<TId>> callback = null)
         {
             foreach (var e in history)
             {
@@ -46,12 +46,12 @@ namespace AggregateOP.Base
             }
         }
 
-        protected void ApplyChange(IEvent e)
+        protected void ApplyChange(IEvent<TId> e)
         {
             ApplyChange(e, true);
         }
 
-        private void ApplyChange(IEvent e, bool isNew)
+        private void ApplyChange(IEvent<TId> e, bool isNew)
         {
             var type = e.GetType();
 

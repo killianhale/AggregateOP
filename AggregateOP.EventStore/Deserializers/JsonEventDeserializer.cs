@@ -4,11 +4,11 @@ using Newtonsoft.Json;
 
 namespace AggregateOP.EventStore.Deserializers
 {
-    public static class JsonEventDeserializer<T> where T : IEvent
+    public static class JsonEventDeserializer<TEvent, TId> where TEvent : IEvent<TId>
     {
-        public static T Deserialize(string json)
+        public static TEvent Deserialize(string json)
         {
-            return JsonConvert.DeserializeObject<T>(json, new JsonSerializerSettings()
+            return JsonConvert.DeserializeObject<TEvent>(json, new JsonSerializerSettings()
             {
                 MaxDepth = 2,
                 ReferenceLoopHandling = ReferenceLoopHandling.Ignore,

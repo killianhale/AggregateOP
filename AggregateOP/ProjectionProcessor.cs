@@ -9,14 +9,14 @@ using Microsoft.Extensions.Logging;
 
 namespace AggregateOP
 {
-    public abstract class ProjectionProcessor<T> : IProjectionProcessor where T : AggregateRoot
+    public abstract class ProjectionProcessor<TAggregate, TId> : IProjectionProcessor where TAggregate : AggregateRoot<TId>
     {
-        private readonly ILogger<ProjectionProcessor<T>> _logger;
+        private readonly ILogger<ProjectionProcessor<TAggregate, TId>> _logger;
 
         private readonly IContextRunner _runner;
-        private readonly IEventRepository _repo;
+        private readonly IEventRepository<TId> _repo;
 
-        private readonly ConcurrentQueue<EventModel> _queue;
+        private readonly ConcurrentQueue<EventModel<TId>> _queue;
         private readonly AutoResetEvent _killEvent;
 
         private long position;
@@ -27,15 +27,15 @@ namespace AggregateOP
 
         private Exception error;
 
-        protected ProjectionProcessor(ILogger<ProjectionProcessor<T>> logger, IEventRepository repo) : this(null, logger, repo) { }
+        protected ProjectionProcessor(ILogger<ProjectionProcessor<TAggregate, TId>> logger, IEventRepository<TId> repo) : this(null, logger, repo) { }
 
-        protected ProjectionProcessor(IContextRunner runner, ILogger<ProjectionProcessor<T>> logger, IEventRepository repo)
+        protected ProjectionProcessor(IContextRunner runner, ILogger<ProjectionProcessor<TAggregate, TId>> logger, IEventRepository<TId> repo)
         {
             _runner = runner ?? new ActionContextRunner();
             _logger = logger;
             _repo = repo;
 
-            _queue = new ConcurrentQueue<EventModel>();
+            _queue = new ConcurrentQueue<EventModel<TId>>();
             _killEvent = new AutoResetEvent(false);
         }
 
@@ -73,20 +73,20 @@ namespace AggregateOP
                 {
                     _runner.RunAction(context =>
                     {
-                        context.Logger.Trace($"Fetching events for aggregate type '{typeof(T).Name}' at position {position}...");
+                        context.Logger.Trace($"Fetching events for aggregate type '{typeof(TAggregate).Name}' at position {position}...");
 
-                        var events = _repo.GetAllEventsForAggregateType<T>(position).GetAwaiter().GetResult();
+                        var events = _repo.GetAllEventsForAggregateType<TAggregate>(position).GetAwaiter().GetResult();
 
                         if (events.Any())
                         {
-                            context.Logger.Information($"Adding {events.Count} events to projection processor queue for aggregate type '{typeof(T).Name}'.");
+                            context.Logger.Information($"Adding {events.Count} events to projection processor queue for aggregate type '{typeof(TAggregate).Name}'.");
                         }
 
                         for (var x = 0; x < events.Count; x++)
                         {
                             if (cancellationToken.IsCancellationRequested)
                             {
-                                context.Logger.Information($"Cancellation Requested! Breaking out of queue for aggregate type '{typeof(T).Name}'.");
+                                context.Logger.Information($"Cancellation Requested! Breaking out of queue for aggregate type '{typeof(TAggregate).Name}'.");
 
                                 break;
                             }
@@ -102,7 +102,7 @@ namespace AggregateOP
 
                         context.State.RemoveParam("eventToQueue");
 
-                    }, $"{typeof(T).Name}_Enqueue");
+                    }, $"{typeof(TAggregate).Name}_Enqueue");
 
                     if (!cancellationToken.IsCancellationRequested)
                     {
@@ -130,19 +130,19 @@ namespace AggregateOP
 
                         if (!queueStartedEmpty)
                         {
-                            context.Logger.Information($"Processing queue for aggregate type '{typeof(T).Name}'...");
+                            context.Logger.Information($"Processing queue for aggregate type '{typeof(TAggregate).Name}'...");
                         }
 
                         while (!_queue.IsEmpty)
                         {
                             if (cancellationToken.IsCancellationRequested)
                             {
-                                context.Logger.Information($"Cancellation Requested! Breaking out of queue for aggregate type '{typeof(T).Name}'.");
+                                context.Logger.Information($"Cancellation Requested! Breaking out of queue for aggregate type '{typeof(TAggregate).Name}'.");
 
                                 break;
                             }
 
-                            var success = _queue.TryDequeue(out EventModel e);
+                            var success = _queue.TryDequeue(out EventModel<TId> e);
 
                             if (success)
                             {
@@ -163,7 +163,7 @@ namespace AggregateOP
                             context.Logger.Debug($"End of queue reached.");
                         }
 
-                    }, $"{typeof(T).Name}Processor_ProcessQueue");
+                    }, $"{typeof(TAggregate).Name}Processor_ProcessQueue");
 
                     if (!cancellationToken.IsCancellationRequested)
                     {
@@ -182,25 +182,25 @@ namespace AggregateOP
 
         protected abstract Task<long> GetStartEventPosition();
 
-        protected abstract Task ProcessEvent(EventModel @event, CancellationToken cancelationToken);
+        protected abstract Task ProcessEvent(EventModel<TId> @event, CancellationToken cancelationToken);
 
         public void Start()
         {
             _runner.RunAction(context =>
             {
-                context.Logger.Information($"Starting projection processor for aggregate type '{typeof(T).Name}'...");
+                context.Logger.Information($"Starting projection processor for aggregate type '{typeof(TAggregate).Name}'...");
 
                 position = GetStartEventPosition().GetAwaiter().GetResult();
 
                 cancellationToken = new CancellationTokenSource();
-            }, $"{typeof(T).Name}Processor_Start");
+            }, $"{typeof(TAggregate).Name}Processor_Start");
 
             Run();
         }
 
         public void Stop()
         {
-            _logger.LogInformation($"Stopping projection processor for aggregate type '{typeof(T).Name}'...");
+            _logger.LogInformation($"Stopping projection processor for aggregate type '{typeof(TAggregate).Name}'...");
 
             cancellationToken.Cancel();
         }

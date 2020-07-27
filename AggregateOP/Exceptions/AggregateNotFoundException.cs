@@ -8,15 +8,15 @@ namespace AggregateOP.Exceptions
         string ReasonCode { get; }
     }
 
-    public class AggregateNotFoundException<T> : AggregateRootException<T>, IAggregateNotFoundException where T : AggregateRoot, new()
+    public class AggregateNotFoundException<TAggregate, TId> : AggregateRootException<TAggregate, TId>, IAggregateNotFoundException where TAggregate : AggregateRoot<TId>, new()
     {
         private const string reasonCode = "NF";
 
-        public AggregateNotFoundException(Guid id, string message) : base(id, reasonCode, message)
+        public AggregateNotFoundException(TId id, string message) : base(id, reasonCode, message)
         {
         }
 
-        public AggregateNotFoundException(Guid id, string message, Exception innerException) : base(id, reasonCode, message, innerException)
+        public AggregateNotFoundException(TId id, string message, Exception innerException) : base(id, reasonCode, message, innerException)
         {
         }
     }

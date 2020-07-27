@@ -4,11 +4,11 @@ using System.Threading.Tasks;
 
 namespace AggregateOP.Base
 {
-    public interface IEventRepository
+    public interface IEventRepository<TId>
     {
-        Task Save<T>(T aggregate, long expectedVersion = -1, EventMetadata metadata = null) where T : AggregateRoot;
-        Task<T> GetAggregateById<T>(Guid id) where T : AggregateRoot, new();
-        Task<List<EventModel>> GetAllEventsForAggregateType<T>(long start) where T : AggregateRoot;
-        Task<List<EventModel>> GetAllEventsOfType<T>(long start) where T : IEvent;
+        Task Save<T>(T aggregate, long expectedVersion = -1, EventMetadata metadata = null) where T : AggregateRoot<TId>;
+        Task<T> GetAggregateById<T>(TId id) where T : AggregateRoot<TId>, new();
+        Task<List<EventModel<TId>>> GetAllEventsForAggregateType<T>(long start) where T : AggregateRoot<TId>;
+        Task<List<EventModel<TId>>> GetAllEventsOfType<T>(long start) where T : IEvent<TId>;
     }
 }

@@ -3,8 +3,8 @@ using MediatR;
 
 namespace AggregateOP.MediatR
 {
-    public interface ICommandHandler<TCommand> : IRequestHandler<TCommand, Guid>
-        where TCommand : IMediatedCommand
+    public interface ICommandHandler<TCommand, TId> : IRequestHandler<TCommand, TId>
+        where TCommand : IMediatedCommand<TId>
     {
     }
 }

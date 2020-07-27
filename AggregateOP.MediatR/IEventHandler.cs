@@ -3,8 +3,8 @@ using MediatR;
 
 namespace AggregateOP.MediatR
 {
-    public interface IEventHandler<TEvent> : IRequestHandler<MediatedEventModel<TEvent>>
-        where TEvent : class, IMediatedEvent
+    public interface IEventHandler<TEvent, TId> : IRequestHandler<MediatedEventModel<TEvent>>
+        where TEvent : class, IMediatedEvent<TId>
     {
     }
 }

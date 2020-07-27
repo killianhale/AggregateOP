@@ -2,8 +2,8 @@
 
 namespace AggregateOP.Base
 {
-    public interface IEvent
+    public interface IEvent<TId>
     {
-        Guid AggregateId { get; }
+        TId AggregateId { get; }
     }
 }

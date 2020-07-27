@@ -2,11 +2,11 @@
 
 namespace AggregateOP.Base
 {
-    public class EventModel
+    public class EventModel<TId>
     {
-        protected IEvent _event;
+        protected IEvent<TId> _event;
 
-        public EventModel(IEvent e, EventMetadata metadata, long position = -1, long? version = null)
+        public EventModel(IEvent<TId> e, EventMetadata metadata, long position = -1, long? version = null)
         {
             _event = e;
             Metadata = metadata;
@@ -14,13 +14,13 @@ namespace AggregateOP.Base
             Version = version ?? position;
         }
 
-        public IEvent Event => _event;
+        public IEvent<TId> Event => _event;
         public EventMetadata Metadata { get; protected set; }
         public long Position { get; protected set; }
         public long Version { get; protected set; }
     }
 
-    public class EventModel<TEvent> : EventModel where TEvent : class, IEvent
+    public class EventModel<TEvent, TId> : EventModel<TId> where TEvent : class, IEvent<TId>
     {
         public EventModel(TEvent e, EventMetadata metadata, long position = -1, long? version = null)
             : base(e, metadata, position, version)

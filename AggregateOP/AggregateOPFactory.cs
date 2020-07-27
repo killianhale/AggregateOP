@@ -6,7 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace AggregateOP
 {
-    public class AggregateOPFactory
+    public class AggregateOPFactory<TId>
     {
         public readonly IServiceCollection _services;
         public readonly Assembly[] _assemblies;
@@ -21,14 +21,14 @@ namespace AggregateOP
 
         public Type EventModelType { get; private set; }
 
-        public void AddEventRepository<T>() where T : class, IEventRepository
+        public void AddEventRepository<T>() where T : class, IEventRepository<TId>
         {
-            _services.AddSingleton<IEventRepository, T>();
+            _services.AddSingleton<IEventRepository<TId>, T>();
         }
 
-        public void AddEventRepository<T>(Func<IServiceProvider, T> factory) where T : class, IEventRepository
+        public void AddEventRepository<T>(Func<IServiceProvider, T> factory) where T : class, IEventRepository<TId>
         {
-            _services.AddSingleton<IEventRepository, T>(factory);
+            _services.AddSingleton<IEventRepository<TId>, T>(factory);
         }
 
         public void AddCommandHandlers()

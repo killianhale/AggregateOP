@@ -4,14 +4,14 @@ using MediatR;
 
 namespace AggregateOP.MediatR
 {
-    public class MediatedEventModel : EventModel, IRequest
+    public class MediatedEventModel<TId> : EventModel<TId>, IRequest
     {
-        public MediatedEventModel(IMediatedEvent e, EventMetadata metadata, long position = -1, long? version = null)
+        public MediatedEventModel(IMediatedEvent<TId> e, EventMetadata metadata, long position = -1, long? version = null)
             : base(e, metadata, position, version)
         { }
     }
 
-    public class MediatedEventModel<TEvent> : EventModel<TEvent>, IRequest where TEvent : class, IMediatedEvent
+    public class MediatedEventModel<TEvent, TId> : EventModel<TEvent, TId>, IRequest where TEvent : class, IMediatedEvent<TId>
     {
         public MediatedEventModel(TEvent e, EventMetadata metadata, long position = -1, long? version = null)
             : base(e, metadata, position, version)

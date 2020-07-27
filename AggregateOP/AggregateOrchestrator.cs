@@ -8,33 +8,33 @@ using ReasonCodeExceptions;
 
 namespace AggregateOP
 {
-    public class AggregateOrchestrator : IAggregateOrchestrator
+    public class AggregateOrchestrator<TId> : IAggregateOrchestrator<TId>
     {
-        private readonly IEventRepository _repo;
+        private readonly IEventRepository<TId> _repo;
         private readonly IContextRunner _runner;
 
-        private Dictionary<string, AggregateRoot> _dependencies;
+        private Dictionary<string, AggregateRoot<TId>> _dependencies;
 
-        public AggregateOrchestrator(IEventRepository repo, IContextRunner runner)
+        public AggregateOrchestrator(IEventRepository<TId> repo, IContextRunner runner)
         {
             _repo = repo;
             _runner = runner;
 
-            _dependencies = new Dictionary<string, AggregateRoot>();
+            _dependencies = new Dictionary<string, AggregateRoot<TId>>();
         }
 
-        public AggregateOrchestrator(IEventRepository repo, Dictionary<string, AggregateRoot> dependencies)
+        public AggregateOrchestrator(IEventRepository<TId> repo, Dictionary<string, AggregateRoot<TId>> dependencies)
         {
             _repo = repo;
 
-            _dependencies = dependencies ?? new Dictionary<string, AggregateRoot>();
+            _dependencies = dependencies ?? new Dictionary<string, AggregateRoot<TId>>();
         }
-        public IAggregateOrchestrator FetchDependency<T>(Guid id) where T : AggregateRoot, new()
+        public IAggregateOrchestrator<TId> FetchDependency<T>(TId id) where T : AggregateRoot<TId>, new()
         {
             return FetchDependencyAsync<T>(id).GetAwaiter().GetResult();
         }
 
-        public async Task<IAggregateOrchestrator> FetchDependencyAsync<T>(Guid id) where T : AggregateRoot, new()
+        public async Task<IAggregateOrchestrator<TId>> FetchDependencyAsync<T>(TId id) where T : AggregateRoot<TId>, new()
         {
             var aggregateType = typeof(T).Name;
 
@@ -54,7 +54,7 @@ namespace AggregateOP
                 {
                     if (ex is DataNotFoundException)
                     {
-                        throw LogAndReturnException(context.Logger.Warning, new AggregateDependencyException<T>(id, $"Unable to find the aggregate with type {aggregateType} and ID {id}", ex));
+                        throw LogAndReturnException(context.Logger.Warning, new AggregateDependencyException<T, TId>(id, $"Unable to find the aggregate with type {aggregateType} and ID {id}", ex));
                     }
                     else
                     {
@@ -62,16 +62,16 @@ namespace AggregateOP
                     }
                 }
 
-                return new AggregateOrchestrator(_repo, _dependencies);
+                return new AggregateOrchestrator<TId>(_repo, _dependencies);
 
-            }, nameof(AggregateOrchestrator));
+            }, nameof(AggregateOrchestrator<TId>));
         }
 
-        public async Task<Guid> Change<T>(Guid id, long expectedVersion, Action<Dictionary<string, AggregateRoot>, T> action) where T : AggregateRoot, new()
+        public async Task<TId> Change<T>(TId id, long expectedVersion, Action<Dictionary<string, AggregateRoot<TId>>, T> action) where T : AggregateRoot<TId>, new()
         {
             var aggregateType = typeof(T).Name;
 
-            return await _runner.RunAction((Func<ContextRunner.Base.ActionContext, Task<Guid>>)(async context =>
+            return await _runner.RunAction((Func<ContextRunner.Base.ActionContext, Task<TId>>)(async context =>
             {
                 T aggregate = null;
 
@@ -91,18 +91,18 @@ namespace AggregateOP
                 {
                     if (ex is DataNotFoundException)
                     {
-                        throw LogAndReturnException(context.Logger.Warning, new AggregateNotFoundException<T>(id, $"Unable to find the aggregate {aggregateType} {id}", (Exception)ex));
+                        throw LogAndReturnException(context.Logger.Warning, new AggregateNotFoundException<T, TId>(id, $"Unable to find the aggregate {aggregateType} {id}", (Exception)ex));
                     }
                     else if (ex is DataConflictException)
                     {
-                        throw LogAndReturnException(context.Logger.Warning, new AggregateConflictException<T>(id, $"Unable to change aggregate {aggregateType} {id} because it's out of date.", (Exception)ex)
+                        throw LogAndReturnException(context.Logger.Warning, new AggregateConflictException<T, TId>(id, $"Unable to change aggregate {aggregateType} {id} because it's out of date.", (Exception)ex)
                         {
                             Aggregate = aggregate
                         });
                     }
                     else if (ex is ArgumentException || ex is InvalidOperationException)
                     {
-                        throw LogAndReturnException(context.Logger.Warning, new AggregateRootException<T>(id, $"Unable to change aggregate {aggregateType} {id}. {ex.Message}", (Exception)ex)
+                        throw LogAndReturnException(context.Logger.Warning, new AggregateRootException<T, TId>(id, $"Unable to change aggregate {aggregateType} {id}. {ex.Message}", (Exception)ex)
                         {
                             Aggregate = aggregate
                         });
@@ -112,14 +112,14 @@ namespace AggregateOP
                         throw ex;
                     }
                 }
-            }), nameof(AggregateOP.AggregateOrchestrator));
+            }), nameof(AggregateOP.AggregateOrchestrator<TId>));
         }
 
-        public async Task<Guid> Create<T>(Func<Dictionary<string, AggregateRoot>, T> action) where T : AggregateRoot, new()
+        public async Task<TId> Create<T>(Func<Dictionary<string, AggregateRoot<TId>>, T> action) where T : AggregateRoot<TId>, new()
         {
             var aggregateType = typeof(T).Name;
 
-            return await _runner.RunAction((Func<ContextRunner.Base.ActionContext, Task<Guid>>)(async context =>
+            return await _runner.RunAction((Func<ContextRunner.Base.ActionContext, Task<TId>>)(async context =>
             {
                 T aggregate = null;
 
@@ -143,19 +143,19 @@ namespace AggregateOP
                     if (ex is DataConflictException)
                     {
                         throw LogAndReturnException(context.Logger.Warning,
-                            new AggregateConflictException<T>(aggregate.Id, $"Unable to create aggregate {aggregateType} {aggregate.Id}. An aggregate with that type and ID already exists!", (Exception)ex));
+                            new AggregateConflictException<T, TId>(aggregate.Id, $"Unable to create aggregate {aggregateType} {aggregate.Id}. An aggregate with that type and ID already exists!", (Exception)ex));
                     }
                     else if (ex is ArgumentException || ex is InvalidOperationException)
                     {
                         throw LogAndReturnException(context.Logger.Warning,
-                            new AggregateRootException<T>(aggregate.Id, $"Unable to create aggregate {aggregateType} {aggregate.Id}. {ex.Message}", (Exception)ex));
+                            new AggregateRootException<T, TId>(aggregate.Id, $"Unable to create aggregate {aggregateType} {aggregate.Id}. {ex.Message}", (Exception)ex));
                     }
                     else
                     {
                         throw ex;
                     }
                 }
-            }), nameof(AggregateOP.AggregateOrchestrator));
+            }), nameof(AggregateOP.AggregateOrchestrator<TId>));
         }
 
         private Exception LogAndReturnException(Action<string, bool> logMethod, Exception ex)

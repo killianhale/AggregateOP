@@ -7,14 +7,14 @@ namespace AggregateOP
 {
     public static class AggregateOpServiceCollectionExtenstions
     {
-        public static void ConfigureAggregateOP(
+        public static void ConfigureAggregateOP<TId>(
             this IServiceCollection services,
             Assembly[] assemblies,
-            Action<AggregateOPFactory> setup)
+            Action<AggregateOPFactory<TId>> setup)
         {
-            services.AddTransient<IAggregateOrchestrator, AggregateOrchestrator>();
+            services.AddTransient<IAggregateOrchestrator<TId>, AggregateOrchestrator<TId>>();
 
-            var factory = new AggregateOPFactory(services, assemblies);
+            var factory = new AggregateOPFactory<TId>(services, assemblies);
 
             setup?.Invoke(factory);
         }

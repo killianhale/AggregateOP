@@ -4,7 +4,7 @@ using MediatR;
 
 namespace AggregateOP.MediatR
 {
-    public interface IMediatedCommand : ICommand, IRequest<Guid>
+    public interface IMediatedCommand<TId> : ICommand, IRequest<TId>
     {
     }
 }

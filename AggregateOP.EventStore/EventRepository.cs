@@ -22,27 +22,27 @@ namespace AggregateOP.EventStore
         public long Version { get; set; }
     }
 
-    public class EventRepository : IEventRepository
+    public class EventRepository<TId> : IEventRepository<TId>
     {
         private readonly IEventStoreClient _store;
         private readonly string _sourceApp;
 
-        protected IDictionary<string, Func<string, object, long, long, EventModel>> _eventDeserializers;
+        protected IDictionary<string, Func<string, object, long, long, EventModel<TId>>> _eventDeserializers;
 
         public EventRepository(
             IEventStoreClient store,
             IOptionsMonitor<EventStoreConfig> eventStoreOptions,
-            IDictionary<string, Func<string, object, long, long, EventModel>> eventDeserializers = null
+            IDictionary<string, Func<string, object, long, long, EventModel<TId>>> eventDeserializers = null
         )
         {
             _store = store;
             _sourceApp = eventStoreOptions.CurrentValue.ApplicationName;
-            _eventDeserializers = eventDeserializers ?? new Dictionary<string, Func<string, object, long, long, EventModel>>();
+            _eventDeserializers = eventDeserializers ?? new Dictionary<string, Func<string, object, long, long, EventModel<TId>>>();
         }
 
         #region Read...
 
-        private async Task<List<EventModel>> GetAllEventsFromStream(ActionContext context, IEventStoreConnection connection, string streamName, long start = StreamPosition.Start)
+        private async Task<List<EventModel<TId>>> GetAllEventsFromStream(ActionContext context, IEventStoreConnection connection, string streamName, long start = StreamPosition.Start)
         {
             StreamEventsSlice currentSlice;
 
@@ -114,9 +114,9 @@ namespace AggregateOP.EventStore
             return items.ToList();
         }
 
-        public async Task<List<EventModel>> GetAllEventsForAggregateType<T>(long start = StreamPosition.Start) where T : AggregateRoot
+        public async Task<List<EventModel<TId>>> GetAllEventsForAggregateType<T>(long start = StreamPosition.Start) where T : AggregateRoot<TId>
         {
-            var results = new List<EventModel>();
+            var results = new List<EventModel<TId>>();
 
             await _store.ConnectWithContext(async (IEventStoreConnection connection, ActionContext context) =>
             {
@@ -131,9 +131,9 @@ namespace AggregateOP.EventStore
             return results;
         }
 
-        public async Task<List<EventModel>> GetAllEventsOfType<T>(long start = StreamPosition.Start) where T : IEvent
+        public async Task<List<EventModel<TId>>> GetAllEventsOfType<T>(long start = StreamPosition.Start) where T : IEvent<TId>
         {
-            var results = new List<EventModel>();
+            var results = new List<EventModel<TId>>();
 
             await _store.ConnectWithContext(async (IEventStoreConnection connection, ActionContext context) =>
             {
@@ -148,7 +148,7 @@ namespace AggregateOP.EventStore
             return results;
         }
 
-        public async Task<T> GetAggregateById<T>(Guid id) where T : AggregateRoot, new()
+        public async Task<T> GetAggregateById<T>(TId id) where T : AggregateRoot<TId>, new()
         {
             T result = null;
 
@@ -160,7 +160,7 @@ namespace AggregateOP.EventStore
 
                 var eventsResponse = await GetAllEventsForAggregateType<T>();
                 var events = eventsResponse
-                    .Where(e => e.Event.AggregateId == id);
+                    .Where(e => e.Event.AggregateId.Equals(id));
 
                 context.Logger.Debug($"Filtered to {events.Count()}/{eventsResponse.Count} events relating to aggregate of type {type.Name} and ID {id}.");
 
@@ -187,7 +187,7 @@ namespace AggregateOP.EventStore
 
         #region Write...
 
-        public async Task Save<T>(T aggregate, long expectedVersion = -1, EventMetadata metadata = null) where T : AggregateRoot
+        public async Task Save<T>(T aggregate, long expectedVersion = -1, EventMetadata metadata = null) where T : AggregateRoot<TId>
         {
             await _store.ConnectWithContext(async (IEventStoreConnection connection, ActionContext context) =>
             {

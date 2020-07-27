@@ -9,11 +9,11 @@ namespace AggregateOP.Exceptions
         string ReasonCode { get; }
     }
 
-    public class AggregateRootException<T> : ReasonCodeException, IAggregateRootException where T : AggregateRoot, new()
+    public class AggregateRootException<TAggregate, TId> : ReasonCodeException, IAggregateRootException where TAggregate : AggregateRoot<TId>, new()
     {
         private const string reasonCodePrefix = "AGG";
 
-        public AggregateRootException(Guid id, string message)
+        public AggregateRootException(TId id, string message)
             : base($"{reasonCodePrefix}", message)
         {
             AggregateId = id;
@@ -21,7 +21,7 @@ namespace AggregateOP.Exceptions
             AddAggregateToReasonCode();
         }
 
-        public AggregateRootException(Guid id, string message, Exception innerException)
+        public AggregateRootException(TId id, string message, Exception innerException)
             : base($"{reasonCodePrefix}", message, innerException)
         {
             AggregateId = id;
@@ -29,7 +29,7 @@ namespace AggregateOP.Exceptions
             AddAggregateToReasonCode();
         }
 
-        public AggregateRootException(Guid id, string reasonCode, string message)
+        public AggregateRootException(TId id, string reasonCode, string message)
             : base($"{reasonCodePrefix}{reasonCode}", message)
         {
             AggregateId = id;
@@ -37,7 +37,7 @@ namespace AggregateOP.Exceptions
             AddAggregateToReasonCode();
         }
 
-        public AggregateRootException(Guid id, string reasonCode, string message, Exception innerException)
+        public AggregateRootException(TId id, string reasonCode, string message, Exception innerException)
             : base($"{reasonCodePrefix}{reasonCode}", message, innerException)
         {
             AggregateId = id;
@@ -47,12 +47,12 @@ namespace AggregateOP.Exceptions
 
         private void AddAggregateToReasonCode()
         {
-            var typeId = Aggregate?.GetAggregateTypeID() ?? new T().GetAggregateTypeID();
+            var typeId = Aggregate?.GetAggregateTypeID() ?? new TAggregate().GetAggregateTypeID();
 
             ReasonCode = $"{reasonCodePrefix}{typeId}{AggregateId.ToString().ToUpper().Substring(0, 5)}{ReasonCode.Substring(reasonCodePrefix.Length)}";
         }
 
-        public Guid AggregateId { get; set; }
-        public T Aggregate { get; set; }
+        public TId AggregateId { get; set; }
+        public TAggregate Aggregate { get; set; }
     }
 }

@@ -5,10 +5,10 @@ using AggregateOP.Base;
 
 namespace AggregateOP
 {
-    public interface IAggregateOrchestrator
+    public interface IAggregateOrchestrator<TId>
     {
-        Task<Guid> Change<T>(Guid id, long expectedVersion, Action<Dictionary<string, AggregateRoot>, T> action) where T : AggregateRoot, new();
-        Task<Guid> Create<T>(Func<Dictionary<string, AggregateRoot>, T> action) where T : AggregateRoot, new();
-        IAggregateOrchestrator FetchDependency<T>(Guid id) where T : AggregateRoot, new();
+        Task<TId> Change<T>(TId id, long expectedVersion, Action<Dictionary<string, AggregateRoot<TId>>, T> action) where T : AggregateRoot<TId>, new();
+        Task<TId> Create<T>(Func<Dictionary<string, AggregateRoot<TId>>, T> action) where T : AggregateRoot<TId>, new();
+        IAggregateOrchestrator<TId> FetchDependency<T>(TId id) where T : AggregateRoot<TId>, new();
     }
 }
