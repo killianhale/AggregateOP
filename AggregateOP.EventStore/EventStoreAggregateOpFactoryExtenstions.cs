@@ -24,7 +24,7 @@ namespace AggregateOP.EventStore
                 t =>
                 {
                     var deserializer = typeof(JsonEventDeserializer<,>);
-                    deserializer = deserializer.MakeGenericType(t);
+                    deserializer = deserializer.MakeGenericType(t, typeof(TId));
 
                     var method = deserializer.GetMethod("Deserialize", BindingFlags.Static | BindingFlags.Public | BindingFlags.InvokeMethod);
 
@@ -33,7 +33,7 @@ namespace AggregateOP.EventStore
                     Func<string, object, long, long, EventModel<TId>> makeModel = (string json, object metadata, long position, long version) =>
                     {
                         var genericModel = eventModelType;
-                        genericModel = genericModel.MakeGenericType(t);
+                        genericModel = genericModel.MakeGenericType(t, typeof(TId));
 
                         var e = factory(json);
 

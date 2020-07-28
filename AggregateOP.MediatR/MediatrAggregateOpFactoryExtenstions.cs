@@ -7,7 +7,7 @@ namespace AggregateOP.MediatR
     {
         public static void AddMediatR<TId>(this AggregateOPFactory<TId> factory)
         {
-            factory.SetEventModelType(typeof(MediatedEventModel<>));
+            factory.SetEventModelType(typeof(MediatedEventModel<,>));
 
             factory._services.AddMediatR(factory._assemblies);
         }

@@ -4,7 +4,7 @@
     <TargetFramework>netstandard2.1</TargetFramework>
     <Authors>Killian Hale</Authors>
     <Description>An extension to AggregateOP to tie Command Handlers and Event Handlers into MediatR.</Description>
-    <PackageVersion>1.0.2</PackageVersion>
+    <PackageVersion>1.0.4</PackageVersion>
   </PropertyGroup>
 
   <ItemGroup>

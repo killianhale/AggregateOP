@@ -49,7 +49,7 @@ namespace AggregateOP
 
         public void SetEventModelType(Type type)
         {
-            if (!typeof(EventModel<>).IsAssignableFrom(typeof(EventModel<>)))
+            if (!typeof(EventModel<,>).IsAssignableFrom(typeof(EventModel<,>)))
             {
                 throw new ArgumentException("The type specified does not implement EventModel!");
             }

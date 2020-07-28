@@ -4,7 +4,7 @@
     <TargetFramework>netstandard2.1</TargetFramework>
     <Authors>Killian Hale</Authors>
     <Description>An implementation of AggregateOP utlizing EventStore.</Description>
-    <PackageVersion>1.0.2</PackageVersion>
+    <PackageVersion>1.0.4</PackageVersion>
   </PropertyGroup>
 
   <ItemGroup>
